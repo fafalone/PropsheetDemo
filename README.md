@@ -69,7 +69,7 @@ The first thing to do is add your control IDs. If you used Visual Studio, you ca
         tPSH.ppsp = VarPtr(tPSP(0))
 ```
 
-You'll definitely need the `pfnDlgProc` functions, but the other callbacks are optional, they're mainly to provide extra information for development and debugging here. 
+You'll definitely need the `pfnDlgProc` functions, but the other callbacks are optional, they're mainly to provide extra information for development and debugging here. **Reminder:** Since tB doesn't yet support unions, I had to picked one or the other for which name to use, and it may not always be right, but it is the same effect: For example, `tPSH.hIcon` is not set to an `HICON`, but to a resource name, so in a union-supporting language, you'd use `tPSH.pszIcon` instead, but since they're at the same offset and the `PSH_USEHICON` flag is not specified, it's `pszIcon` as far as Windows is concerned.
 
 > [!IMPORTANT]
 > If you do use callbacks for the pages, make sure to return 1 in response to `PSPCB_CREATE`, otherwise the page will not be created and the call will fail. I had some trouble with this because of an odd situation where `Debug.Print` statements weren't executing in it while they were from other messages, so I had incorrectly assumed the code never even reached that point so never double checked it. Special thanks to The trick on VBForums for figuring that out.
