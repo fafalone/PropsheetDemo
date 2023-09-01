@@ -1,0 +1,602 @@
+Module modPropsheet
+    Option Explicit
+    'API defs all come from tbShellLib    
+
+    Private Const IDD_PROPPAGE_1  = 107
+    Private Const IDD_PROPPAGE_2  = 108
+
+    Private Const IDB_BITMAP1  = 130
+    Private Const IDB_TWINBASIC  = "#131"
+	
+    Private Const IDI_APPICON = "#101"
+    Private Const IDI_SMALL  = 108
+    Private Const IDI_TWINBASIC  = "#131"
+    Private Const IDI_ICONGLB = "#9100"
+    Private Const IDI_ICONDSC = "#9200"
+    
+    Private Const IDC_CHECK1  = 1004
+    Private Const IDC_CHECK2  = 1005
+    Private Const IDC_EDIT1  = 1006
+    Private Const IDC_EDIT2  = 1007
+    Private Const IDC_SLIDER1  = 1008
+    Private Const IDC_ABOUT  = 1009
+    Private Const IDC_SYSLINK1  = 1010
+    Private Const IDC_STATIC  = -1
+    Private Const IDC_RADIO1 = 310
+    Private Const IDC_RADIO2 = 311
+    Private Const IDC_RADIO3 = 312
+    Private Const IDC_IPADDR1 = 2050
+    Private Const IDC_PUSH1 = 1390
+    Private Const IDC_PUSH2 = 1391
+    Private Const IDC_EDITP2 = 390
+    Private Const IDC_HDRPAGE1 = 200
+    Private Const IDC_HDRPAGE2 = 301
+    Private Const IDC_BMPPAGE1 = 140
+    Private Const IDC_LISTBOX1 = 175
+    Private Const IDC_EDITLOC = 150
+       
+    Private hModRes As LongPtr
+    
+    Private szLBDesc(7) As String
+    Private bPage1Init As Boolean, bPage2Init As Boolean
+    Private Const szTitle = "twinBASIC PropSheet Demo"
+
+    Public Enum PropsheetDispType
+        pdtModal
+        pdtModeless
+        pdtWizard
+        pdtWizard97
+        pdtAeroWizard
+    End Enum
+	Private nCurDisp As PropsheetDispType
+
+    Private mSliderPos As Long
+    Private hDialog As LongPtr, hDialog2 As LongPtr
+    
+    Dim sInitEdit1 As String
+    Dim sInitEdit2 As String
+    
+    Dim lInitIP As Long
+    
+    Dim sInitEditP2 As String
+    Private Const szHelpTitle = "twinBASIC PropSheet Demo"
+    Private Const szHelpHeader = "twinBASIC Property Sheet Demo"
+    Private Const szHelpMessage = "This is the twinBASIC Property Sheet Demo, created " & _
+                                  "by Jon Johnson based on the C/C++ property sample from the Windows 7 SDK, " & _
+                                  "with Dialog resources made using <a href=""http://www.angusj.com/resourcehacker/"">ResourceHacker</a>" & vbcrlf & vbcrlf & _
+                                  "For the readme, filing bug reports, original source, and more, visit the project's GitHub repository:" & vbcrlf & _
+                                  "<a href=""https://github.com/fafalone/PropsheetDemo"">https://github.com/fafalone/PropsheetDemo</a>"
+    Private Const szHelpFooter = "Copyright ©2023 Jon Johnson. Licensed under the MIT license. See code or repository for more  information."
+    
+	
+    Private Function GetEditTextW(hWnd As LongPtr) As String
+        Dim lLen As Long
+        Dim sBuf As String
+        lLen = CLng(SendMessageW(hWnd, WM_GETTEXTLENGTH, 0, ByVal 0&))
+        sBuf = String$(lLen, 0)
+        Call SendMessageW(hWnd, WM_GETTEXT, lLen + 1, ByVal StrPtr(sBuf))
+        Return sBuf
+    End Function
+
+    Public Sub InitPageOneValues(hDlg As LongPtr)
+        'Set the initial values. In a real app, you'd load these from the registry or another
+        'settings storage system
+
+        Dim hFontHdr As LongPtr = CreateFontW(-20, 0, 0, 0, FW_BOLD, CFALSE, CTRUE, CFALSE, _
+                                                ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, _
+                                                CLEARTYPE_QUALITY, DEFAULT_PITCH Or FF_SWISS, _
+                                                StrPtr("Segoe UI"))
+
+        If hFontHdr Then
+            SendDlgItemMessageW hDlg, IDC_HDRPAGE1, WM_SETFONT, hFontHdr, ByVal CTRUE
+            SetDlgItemTextW hDlg, IDC_HDRPAGE1, StrPtr("Welcome to our twinBASIC Property Sheet Demo!")
+            'DeleteObject hFontHdr '<-- Don't do this here! If the font is deleted the font reverts
+        Else
+            Debug.Print "Failed to create header font."
+        End If
+
+        CheckDlgButton hDlg, IDC_CHECK1, BST_CHECKED
+
+        Dim hList As LongPtr = GetDlgItem(hDlg, IDC_LISTBOX1)
+        If hList Then
+            SendMessageW hList, LB_ADDSTRING, 0, ByVal StrPtr("Chicago")
+            szLBDesc(0) = "Something about Chicago"
+            SendMessageW hList, LB_ADDSTRING, 0, ByVal StrPtr("London")
+            szLBDesc(1) = "Something about London"
+            SendMessageW hList, LB_ADDSTRING, 0, ByVal StrPtr("Los Angeles")
+            szLBDesc(2) = "Something about Los Angeles"
+            SendMessageW hList, LB_ADDSTRING, 0, ByVal StrPtr("Miami")
+            szLBDesc(3) = "Something about Miami"
+            SendMessageW hList, LB_ADDSTRING, 0, ByVal StrPtr("New York")
+            szLBDesc(4) = "Something about New York City"
+            SendMessageW hList, LB_ADDSTRING, 0, ByVal StrPtr("Paris")
+            szLBDesc(5) = "Something about Paris"
+            SendMessageW hList, LB_ADDSTRING, 0, ByVal StrPtr("Sydney")
+            szLBDesc(6) = "Something about Sydney"
+            SendMessageW hList, LB_ADDSTRING, 0, ByVal StrPtr("Tokyo")
+            szLBDesc(7) = "Something about Tokyo"
+            SendMessageW hList, LB_SETCURSEL, 0, ByVal 0
+            SetDlgItemTextW hDlg, IDC_EDITLOC, ByVal StrPtr(szLBDesc(0))
+        Else
+            Debug.Print "Failed to get hwnd for IDC_LISTBOX1"
+        End If
+        
+        sInitEdit1 = App.Path
+        SetDlgItemTextW hDlg, IDC_EDIT1, ByVal StrPtr(sInitEdit1)
+
+        sInitEdit2 = Environ$("WINDIR")
+        SetDlgItemTextW hDlg, IDC_EDIT2, ByVal StrPtr(sInitEdit2)
+
+        bPage1Init = True
+    End Sub
+    
+    Public Sub InitPageTwoValues(hDlg As LongPtr)
+        'Set the initial values. In a real app, you'd load these from the registry or another
+        'settings storage system    
+        
+        Dim hFontHdr As LongPtr = CreateFontW(-20, 0, 0, 0, FW_BOLD, CFALSE, CFALSE, CFALSE, _
+                                                ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, _
+                                                CLEARTYPE_QUALITY, DEFAULT_PITCH Or FF_SWISS, _
+                                                StrPtr("Segoe UI"))
+        
+        If hFontHdr Then
+            SendDlgItemMessageW hDlg, IDC_HDRPAGE2, WM_SETFONT, hFontHdr, ByVal CTRUE
+            SetDlgItemTextW hDlg, IDC_HDRPAGE2, StrPtr("Welcome to Page 2!")
+            'DeleteObject hFontHdr'<-- Don't do this here! If the font is deleted the font reverts
+        Else
+            Debug.Print "Failed to create header font."
+        End If
+        
+        
+        Dim hSlider As LongPtr = GetDlgItem(hDlg, IDC_SLIDER1)
+        If hSlider Then
+            SendMessage hSlider, TBM_SETRANGE, CFALSE, ByVal MAKEDWORD(0, 100)
+            SendMessage hSlider, TBM_SETPOS, CTRUE, ByVal 50
+            mSliderPos = 50
+        Else
+            Debug.Print "Failed to get hwnd for IDC_SLIDER1"
+        End If
+        
+        CheckRadioButton hDlg, IDC_RADIO1, IDC_RADIO3, IDC_RADIO2
+        
+        Dim hPush1 As LongPtr = GetDlgItem(hDlg, IDC_PUSH1)
+        SendMessage hPush1, BM_SETCHECK, BST_CHECKED, ByVal 0
+
+        Dim hIP As LongPtr = GetDlgItem(hDlg, IDC_IPADDR1)
+        If hIP Then
+            SendMessage hIP, IPM_SETRANGE, 0, ByVal MAKEIPRANGE(0, 255)
+            SendMessage hIP, IPM_SETRANGE, 1, ByVal MAKEIPRANGE(0, 255)
+            SendMessage hIP, IPM_SETRANGE, 2, ByVal MAKEIPRANGE(0, 255)
+            SendMessage hIP, IPM_SETRANGE, 3, ByVal MAKEIPRANGE(0, 255)
+            lInitIP = MAKEIPADDRESS(127, 0, 0, 1)
+            SendMessage hIP, IPM_SETADDRESS, 0, ByVal lInitIP
+        Else
+            Debug.Print "Failed to get IPAddr hwnd."
+        End If
+        
+        sInitEditP2 = "username=twinbasic password=isthefuture"
+        SetDlgItemTextW hDlg, IDC_EDITP2, StrPtr(sInitEditP2)
+        
+        bPage2Init = True
+    End Sub
+    
+    Public Function ShowPropsheet(ByVal hWnd As LongPtr, hInst As LongPtr, nShowAs As PropsheetDispType) As Long
+        bPage1Init = False: bPage2Init = False 'Reset for each showing
+        If hInst = 0 Then hInst = GetModuleHandleW() 'App.hInstance creates a depend on WinNativeForms.
+        
+        hModRes = hInst
+        nCurDisp = nShowAs
+        
+        Dim tPSP(1) As PROPSHEETPAGEW
+        Dim tPSH As PROPSHEETHEADERW
+    
+        'Configure pages
+        tPSP(0).dwSize = LenB(Of PROPSHEETPAGEW)
+        tPSP(0).dwFlags = PSP_USECALLBACK Or PSP_USETITLE
+        tPSP(0).hInstance = hInst
+        tPSP(0).pResource = IDD_PROPPAGE_1 'or, StrPtr("#107")
+        tPSP(0).pszTitle = StrPtr("Page 1")
+        tPSP(0).pfnDlgProc = AddressOf PageOneDlgProc
+        tPSP(0).pfnCallback = AddressOf PageOneCallbackProc
+        If nShowAs >= pdtWizard97 Then
+            tPSP(0).dwFlags = tPSP(0).dwFlags Or PSP_USEHEADERTITLE Or PSP_USEHEADERSUBTITLE
+            tPSP(0).pszHeaderTitle = StrPtr("Showing you the wizard...")
+            tPSP(0).pszHeaderSubTitle = StrPtr("This is the first page.")
+            tPSP(0).bmHeader = StrPtr(IDB_TWINBASIC)
+        End If
+    
+        tPSP(1).dwSize = LenB(Of PROPSHEETPAGEW)
+        tPSP(1).dwFlags = PSP_USECALLBACK Or PSP_USETITLE
+        tPSP(1).hInstance = hInst
+        tPSP(1).pResource = IDD_PROPPAGE_2
+        tPSP(1).pszTitle = StrPtr("Page 2")
+        tPSP(1).pfnDlgProc = AddressOf PageTwoDlgProc
+        tPSP(1).pfnCallback = AddressOf PageTwoCallbackProc
+        If nShowAs >= pdtWizard97 Then
+            tPSP(1).dwFlags = tPSP(1).dwFlags Or PSP_USEHEADERTITLE Or PSP_USEHEADERSUBTITLE
+            tPSP(1).pszHeaderTitle = StrPtr("Isn't this neat?")
+            tPSP(1).pszHeaderSubTitle = StrPtr("This is the second page.")
+        End If
+        
+        'Configure header        
+        tPSH.dwSize = LenB(Of PROPSHEETHEADERW)
+        tPSH.dwFlags = PSH_USECALLBACK Or PSH_PROPSHEETPAGE Or PSH_USEICONID
+        If nShowAs = pdtModeless Then tPSH.dwFlags = tPSH.dwFlags Or PSH_MODELESS
+        If nShowAs = pdtWizard Then tPSH.dwFlags = tPSH.dwFlags Or PSH_WIZARD
+        If nShowAs = pdtWizard97 Then
+            tPSH.dwFlags = tPSH.dwFlags Or PSH_WIZARD97
+            tPSH.hbmHeader = StrPtr(IDB_TWINBASIC)
+        End If
+        If nShowAs = pdtAeroWizard Then
+            tPSH.dwFlags = tPSH.dwFlags Or PSH_AEROWIZARD Or PSH_WIZARD
+            tPSH.hbmHeader = StrPtr(IDB_TWINBASIC)
+        End If
+        tPSH.hInstance = hInst
+        tPSH.hIcon = StrPtr(IDI_TWINBASIC)
+        tPSH.pszCaption = StrPtr(szTitle)
+        tPSH.nPages = UBound(tPSP) + 1
+        tPSH.hwndParent = hWnd
+        tPSH.pfnCallback = AddressOf PropsheetCallback
+        tPSH.ppsp = VarPtr(tPSP(0))
+    
+        Dim lRet As LongPtr
+        lRet = PropertySheetW(tPSH) 'This call is blocking unless we specified PSH_MODELESS
+        Debug.Print "lRet=" & lRet & ", Err=" & Err.LastDllError
+        Return CLng(lRet)
+    End Function
+    
+    Private Function PageOneDlgProc(ByVal hDlg As LongPtr, ByVal uMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
+        Select Case uMsg
+            Case WM_INITDIALOG
+                Debug.Print "WM_INITDIALOG on p1"
+                hDialog = hDlg
+                InitPageOneValues hDlg
+            
+            Case WM_NOTIFY
+                Dim tNMH As NMHDR
+                CopyMemory tNMH, ByVal lParam, LenB(Of NMHDR)
+            
+                Select Case tNMH.IDFrom
+                    Case 0
+                        If tNMH.Code = PSN_APPLY Then
+                            Debug.Print "User clicked Apply/Ok on Page1"
+                        ElseIf tNMH.Code = PSN_SETACTIVE Then
+                            'Ignored if not wizard:
+							If nCurDisp >= pdtWizard Then
+                            	PropSheet_SetWizButtons GetParent(hDlg), 0, PSWIZB_NEXT
+							End If
+                        End If
+                
+                End Select
+            
+            Case WM_COMMAND
+                Dim nID As Long = GET_WM_COMMAND_ID(wParam, lParam)
+                Dim nCmd As Long = GET_WM_COMMAND_CMD(wParam, lParam)
+                Dim hEdit1 As LongPtr, hEdit2 As LongPtr
+                If nID = IDC_CHECK1 Then
+                    If nCmd = BN_CLICKED Then
+                        Debug.Print "Clicked Check1"
+                        PropSheet_Changed(GetParent(hDlg), hDlg)
+                    End If
+                ElseIf nID = IDC_CHECK2 Then
+                    If nCmd = BN_CLICKED Then
+                        Debug.Print "Clicked Check2"
+                        PropSheet_Changed(GetParent(hDlg), hDlg)
+                    End If
+                
+                ElseIf nID = IDC_EDIT1 Then
+                    If nCmd = EN_CHANGE Then
+                        hEdit1 = lParam
+                        Dim sText As String = GetEditTextW(hEdit1)
+                        If sText <> sInitEdit1 Then
+                            Debug.Print "Changed Edit1, text=" & sText
+                            PropSheet_Changed(GetParent(hDlg), hDlg)
+                        End If
+                    End If
+                ElseIf nID = IDC_EDIT2 Then
+                    If nCmd = EN_CHANGE Then
+                        hEdit2 = lParam
+                        Dim sText2 As String = GetEditTextW(hEdit2)
+                        If sText2 <> sInitEdit2 Then
+                            Debug.Print "Changed Edit2, text=" & sText2
+                            PropSheet_Changed(GetParent(hDlg), hDlg)
+                        End If
+                    End If
+                ElseIf nID = IDC_EDITLOC Then
+                    If nCmd = EN_CHANGE Then
+                        Debug.Print "Changed EditLoc"
+                        Dim iSel As Long
+                        Dim sLocText As String = GetEditTextW(GetDlgItem(hDlg, IDC_EDITLOC))
+                        iSel = CLng(SendDlgItemMessageW(hDlg, IDC_LISTBOX1, LB_GETCURSEL, 0, ByVal 0))
+                        If sLocText <> szLBDesc(iSel) Then
+                            szLBDesc(iSel) = sLocText
+                            PropSheet_Changed(GetParent(hDlg), hDlg)
+                        End If
+                    End If
+					
+                ElseIf nID = IDC_LISTBOX1 Then
+                    If nCmd = LBN_SELCHANGE Then
+                        Debug.Print "ListBox SelChange"
+                        PropSheet_Changed(GetParent(hDlg), hDlg)
+                        Dim iIdx As Long
+                        iIdx = CLng(SendDlgItemMessageW(hDlg, IDC_LISTBOX1, LB_GETCURSEL, 0, ByVal 0))
+                        SetDlgItemTextW hDlg, IDC_EDITLOC, ByVal StrPtr(szLBDesc(iIdx))
+                    End If
+                End If
+            Case Else
+                Return 0
+        End Select
+    
+        Return 1
+    End Function
+
+    Private Function PageOneCallbackProc(ByVal hwnd As LongPtr, ByVal uMsg As Long, ppsp As PROPSHEETPAGEW) As Long
+        Select Case uMsg
+            Case PSPCB_ADDREF
+                Debug.Print "PageOneCB.AddRef"
+            Case PSPCB_CREATE
+                Debug.Print "PageOneCB.Create"
+                Return 1
+            Case PSPCB_RELEASE
+                Debug.Print "PageOneCB.Release"
+        End Select
+    End Function
+
+    Private Function PageTwoDlgProc(ByVal hDlg As LongPtr, ByVal uMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
+        Select Case uMsg
+            Case WM_INITDIALOG
+                InitPageTwoValues hDlg
+                hDialog2 = hDlg
+                
+            Case WM_NOTIFY
+                Dim tNMH As NMHDR
+                CopyMemory tNMH, ByVal lParam, LenB(Of NMHDR)
+            
+                Select Case tNMH.IDFrom
+                    Case 0
+                        If tNMH.Code = PSN_APPLY Then
+                            Debug.Print "User clicked Apply/Ok on Page2"
+                        ElseIf tNMH.Code = PSN_SETACTIVE Then
+                            'ignored if the property sheet is not a wizard:
+                            If nCurDisp >= pdtWizard Then
+                            	PropSheet_SetWizButtons(GetParent(hDlg), 0, PSWIZB_BACK Or PSWIZB_FINISH)
+							End If
+                        ElseIf tNMH.Code = PSN_RESET Then
+                            Debug.Print "User clicked Cancel on Page2"
+                        End If
+                
+                    Case IDC_SLIDER1
+                        If tNMH.Code = TRBN_THUMBPOSCHANGING Then
+                            Dim tNMPC As NMTRBTHUMBPOSCHANGING
+                            CopyMemory tNMPC, ByVal lParam, LenB(Of NMTRBTHUMBPOSCHANGING)
+                            Debug.Print "Slider changed position, new pos=" & tNMPC.dwPos
+                            'SendMessage GetParent(hDlg), PSM_CHANGED, hDlg, ByVal 0 'Enable the Apply button
+                            PropSheet_Changed(GetParent(hDlg), hDlg)
+                        ElseIf tNMH.Code = NM_RELEASEDCAPTURE Then
+                            Dim nPos As Long
+                            nPos = CLng(SendMessage(tNMH.hWndFrom, TBM_GETPOS, 0, ByVal 0))
+                            If nPos <> mSliderPos Then
+                                mSliderPos = nPos
+                                PropSheet_Changed(GetParent(hDlg), hDlg)
+                            End If
+                        End If
+                        
+                    Case IDC_IPADDR1
+                        If tNMH.Code = IPN_FIELDCHANGED Then
+                            Dim nmip As NMIPADDRESS
+                            CopyMemory nmip, ByVal lParam, LenB(Of NMIPADDRESS)
+                            If nmip.iValue <> lInitIP Then
+                                Debug.Print "IP field changed"
+                                PropSheet_Changed(GetParent(hDlg), hDlg)
+                            End If
+                        End If
+						
+					Case IDC_SYSLINK1
+						If tNMH.Code = NM_CLICK Then
+							Dim tNML As NMLINK
+							CopyMemory tNML, ByVal lParam, LenB(Of NMLINK)
+							'To get string in tB:
+							' Dim sURL As String
+							' SysReAllocStringLenW VarPtr(sURL), VarPtr(tNML.item.szURL(0)), lstrlenW(ByVal VarPtr(tNML.item.szURL(0)))
+							'Otherwise just send to ShellExecute, since it doesn't need a BSTR, and the integer array is the same as WSTR
+          					Call ShellExecuteW(0, 0, VarPtr(tNML.item.szURL(0)), 0, 0, SW_SHOWNORMAL)
+						End If
+                        
+                End Select
+            
+            Case WM_COMMAND
+                Dim nID As Long = GET_WM_COMMAND_ID(wParam, lParam)
+                Dim nCmd As Long = GET_WM_COMMAND_CMD(wParam, lParam)
+                If nID = IDC_ABOUT Then
+                    If nCmd = BN_CLICKED Then
+                        OnAbout GetParent(hDlg)
+                    End If
+                    
+                ElseIf nID = IDC_EDITP2 Then
+                    If nCmd = EN_CHANGE Then
+                        Dim hEditP2 As LongPtr = lParam
+                        Dim sText As String = GetEditTextW(hEditP2)
+                        If sText <> sInitEditP2 Then
+                            Debug.Print "Changed page 2 edit, text=" & sText
+                            PropSheet_Changed(GetParent(hDlg), hDlg)
+                        End If
+                    End If
+                    
+                ElseIf (nID = IDC_PUSH1) Or (nID = IDC_PUSH2) Or (nID = IDC_RADIO1) Or (nID = IDC_RADIO2) Or (nID = IDC_RADIO3) Then
+                    If nCmd = BN_CLICKED Then
+                        PropSheet_Changed(GetParent(hDlg), hDlg)
+                    End If
+                
+                End If
+        
+            Case Else
+                Return 0
+        End Select
+        Return 1
+    End Function
+
+    Private Function PageTwoCallbackProc(ByVal hwnd As LongPtr, ByVal uMsg As Long, ppsp As PROPSHEETPAGEW) As Long
+        Select Case uMsg
+            Case PSPCB_ADDREF
+                Debug.Print "PageTwoCB.AddRef"
+            Case PSPCB_CREATE
+                Debug.Print "PageTwoCB.Create"
+                Return 1
+            Case PSPCB_RELEASE
+                Debug.Print "PageTwoCB.Release"
+        End Select
+    End Function
+
+    Private Sub PropsheetCallback(ByVal hwndPropSheet As LongPtr, ByVal uMsg As Long, ByVal lParam As LongPtr)
+        Select Case uMsg
+            Case PSCB_PRECREATE
+                Debug.Print "PSCB_PRECREATE"
+        
+            Case PSCB_INITIALIZED
+                Debug.Print "PSCB_INITIALIZED"
+                
+            Case PSCB_BUTTONPRESSED
+                If lParam = PSBTN_APPLYNOW Then
+                    frmMain.PostStatus "Apply Now"
+                    ReportValues
+                ElseIf lParam = PSBTN_CANCEL Then
+                    frmMain.PostStatus "Cancel"
+                    frmMain.Text3.Text = "Dialog was canceled; no changes should be made."
+                ElseIf lParam = PSBTN_OK Then
+                    frmMain.PostStatus "OK"
+                    ReportValues
+                ElseIf lParam = PSBTN_BACK Then
+                    frmMain.PostStatus "Back"
+                ElseIf lParam = PSBTN_FINISH Then
+                	If nCurDisp >= pdtWizard Then
+                    	frmMain.PostStatus "Finish/X (Close Window)"
+                    	ReportValues
+					Else
+						frmMain.PostStatus "X (Close Window)"
+					End If
+                ElseIf lParam = PSBTN_NEXT Then
+                    frmMain.PostStatus "Next"
+                ElseIf lParam = PSBTN_HELP Then
+                    frmMain.PostStatus "Help"
+					MsgBox "Nobody can help you.", vbInformation, "Help"
+                End If
+                
+        End Select
+    End Sub
+
+    Private Sub ReportValues()
+        frmMain.Text3.Text = ""
+        If bPage1Init Then
+            Dim sLocStr As String = Join(szLBDesc, "; ")
+            frmMain.Text3.Text = "Location descriptions={" & sLocStr & "}" & vbCrLf
+            
+            If IsDlgButtonChecked(hDialog, IDC_CHECK1) = BST_CHECKED Then
+                frmMain.Text3.Text &= "Some Setting = Checked" & vbCrLf
+            Else
+                frmMain.Text3.Text &= "Some Setting = Unchecked" & vbCrLf
+            End If
+            If IsDlgButtonChecked(hDialog, IDC_CHECK2) = BST_CHECKED Then
+                frmMain.Text3.Text &= "Another Setting = Checked" & vbCrLf
+            Else
+                frmMain.Text3.Text &= "Another Setting = Unchecked" & vbCrLf
+            End If
+            
+            frmMain.Text3.Text &= "A string setting = " & GetEditTextW(GetDlgItem(hDialog, IDC_EDIT1)) & vbCrLf
+            frmMain.Text3.Text &= "Another string setting = " & GetEditTextW(GetDlgItem(hDialog, IDC_EDIT2)) & vbCrLf
+        
+		Else
+            frmMain.Text3.Text = "Page 1 was not loaded; no change." & vbCrLf
+        End If
+        
+		
+        If bPage2Init Then
+            frmMain.Text3.Text &= "Slider position=" & mSliderPos & vbCrLf
+
+            If IsDlgButtonChecked(hDialog2, IDC_RADIO1) = BST_CHECKED Then
+                frmMain.Text3.Text &= "Radio selection=1" & vbCrLf
+            ElseIf IsDlgButtonChecked(hDialog2, IDC_RADIO2) = BST_CHECKED Then
+                frmMain.Text3.Text &= "Radio selection=2" & vbCrLf
+            ElseIf IsDlgButtonChecked(hDialog2, IDC_RADIO3) = BST_CHECKED Then
+                frmMain.Text3.Text &= "Radio selection=3" & vbCrLf
+            Else
+                frmMain.Text3.Text &= "Radio error; none selected." & vbCrLf
+            End If
+            
+            
+            Dim bPush1 As ButtonStates = CLng(SendDlgItemMessage(hDialog2, IDC_PUSH1, BM_GETCHECK, 0, ByVal 0))
+            Dim bPush2 As ButtonStates = CLng(SendDlgItemMessage(hDialog2, IDC_PUSH2, BM_GETCHECK, 0, ByVal 0))
+            If ((bPush1 And BST_CHECKED) = BST_CHECKED) And ((bPush2 And BST_CHECKED) = 0) Then
+                frmMain.Text3.Text &= "PushLike selection=1" & vbCrLf
+            ElseIf ((bPush1 And BST_CHECKED) = 0) And ((bPush2 And BST_CHECKED) = BST_CHECKED) Then
+                frmMain.Text3.Text &= "PushLike selection=2" & vbCrLf
+			ElseIf ((bPush1 And BST_CHECKED) = BST_CHECKED) And ((bPush2 And BST_CHECKED) = BST_CHECKED) Then
+      			frmMain.Text3.Text &= "PushLike selection=Both" & vbCrLf
+            Else
+                frmMain.Text3.Text &= "Pushlike selection=Neither" & vbCrLf
+            End If
+            
+            Dim dwIP As Long
+            Dim dwIPtmp As LongPtr
+            SendMessage GetDlgItem(hDialog2, IDC_IPADDR1), IPM_GETADDRESS, 0, dwIPtmp
+            #If Win64 Then
+                CopyMemory dwIP, dwIPtmp, 4
+            #Else
+                dwIP = dwIPtmp
+            #End If
+            frmMain.Text3.Text &= "IP Address=" & Ipv4NetAtoS(dwIP) & vbCrLf
+            
+            frmMain.Text3.Text &= "IP Text= " & GetEditTextW(GetDlgItem(hDialog2, IDC_EDITP2)) & vbCrLf
+        
+		Else
+            frmMain.Text3.Text &= "Page 2 was not loaded; no change."
+        End If
+    End Sub
+    
+    Private Function Ipv4NetAtoS(ByVal NetAddrLong As Long) As String
+        Dim pS As LongPtr
+        Dim pEnd As LongPtr
+        Dim tAdr As in_addr
+        Dim haddr As Long
+        haddr = ntohl(NetAddrLong)
+        tAdr.s_addr = haddr
+        Ipv4NetAtoS = Space$(15 * 2)
+        pS = StrPtr(Ipv4NetAtoS)
+        pEnd = RtlIpv4AddressToStringW(tAdr, pS)
+        #If Win64 Then
+            Ipv4NetAtoS = Left$(Ipv4NetAtoS, CLng(((pEnd Xor &H8000000000000000) - (pS Xor &H8000000000000000)) \ 2))
+        # Else
+             Ipv4NetAtoS = Left$(Ipv4NetAtoS, ((pEnd Xor &H80000000) - (pS Xor &H80000000)) \ 2)
+        #End If
+        
+    End Function
+	
+	Private Sub OnAbout(Optional hOwner As LongPtr)
+        Dim tdc As TASKDIALOGCONFIG
+        tdc.cbSize = LenB(Of TASKDIALOGCONFIG)
+        tdc.hInstance = hModRes
+        tdc.hWndParent = hOwner
+        tdc.dwCommonButtons = TDCBF_CLOSE_BUTTON
+        tdc.dwFlags = TDF_ENABLE_HYPERLINKS
+        tdc.pfCallback = AddressOf TaskDialogCallbackProc
+        tdc.pszMainIcon = MAKEINTRESOURCE(CLng(TD_SHIELD_GRAY_ICON))
+        tdc.pszFooterIcon = MAKEINTRESOURCE(CLng(TD_INFORMATION_ICON))
+        tdc.pszWindowTitle = StrPtr(szHelpTitle)
+        tdc.pszMainInstruction = StrPtr(szHelpHeader)
+        tdc.pszContent = StrPtr(szHelpMessage)
+        tdc.pszFooter = StrPtr(szHelpFooter)
+        
+        Dim lRes As Long = TaskDialogIndirect(tdc)
+	End Sub
+	
+    Private Function TaskDialogCallbackProc(ByVal hwnd As LongPtr, ByVal uNotification As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal lpRefData As LongPtr) As LongPtr
+        Select Case uNotification
+            'Replace the shield icon with our app icon
+            Case TDN_DIALOG_CONSTRUCTED
+                SendMessageW hwnd, TDM_UPDATE_ICON, TDIE_ICON_MAIN, ByVal StrPtr(IDI_APPICON)
+            
+            'lParam is a pointer to the URL, so just forward it to execute with default browser.
+            Case TDN_HYPERLINK_CLICKED
+                Call ShellExecuteW(0, 0, lParam, 0, 0, SW_SHOWNORMAL)
+        End Select
+    End Function
+End Module

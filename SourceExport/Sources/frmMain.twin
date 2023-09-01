@@ -1,0 +1,90 @@
+[ Description ("") ]
+[ FormDesignerId ("149782F6-F753-417B-8377-CB56C3A3C794") ]
+[ PredeclaredId ]
+Class frmMain
+    
+    Private hMod As LongPtr
+    
+    Private Sub OnLoad() Handles Form.Load
+        hMod = GetModuleHandleW()
+        If App.IsInIDE Then
+            If (App.LastBuildPath = "") Or (PathFileExists(App.LastBuildPath) = 0) Then
+                MsgBox("To run from the IDE you must build first, or replace this routine with one loading a DLL containing your resources.", vbCritical + vbOKOnly, App.Title)
+                End
+            Else
+                hMod = LoadLibraryEx(App.LastBuildPath, 0, LOAD_LIBRARY_AS_DATAFILE Or LOAD_LIBRARY_AS_IMAGE_RESOURCE)
+            End If
+        End If
+    End Sub
+    
+    Public Sub PostStatus(sMsg As String)
+        Text2.Text = sMsg
+    End Sub
+    
+    Private Sub Command1_Click() Handles Command1.Click
+        Dim lRet As Long
+        lRet = ShowPropsheet(Me.hWnd, hMod, pdtModal)
+        Select Case lRet
+            Case -1
+                Text1.Text = "An error occured."
+            Case 0
+                Text1.Text = "No changes were made."
+            Case Is >= 1
+                Text1.Text = "OK/Apply clicked."
+        End Select
+    End Sub
+    
+    Private Sub Command2_Click() Handles Command2.Click
+        Dim lRet As Long
+        lRet = ShowPropsheet(Me.hWnd, hMod, pdtModeless)
+        Select Case lRet
+            Case -1
+                Text1.Text = "An error occured."
+            Case 0
+                Text1.Text = "(Modeless dialog loaded ok)"
+            Case Is >= 1
+                Text1.Text = "OK/Apply clicked."
+        End Select
+    End Sub
+    
+    Private Sub Command3_Click() Handles Command3.Click
+        Dim lRet As Long
+        lRet = ShowPropsheet(Me.hWnd, hMod, pdtWizard)
+        Select Case lRet
+            Case -1
+                Text1.Text = "An error occured."
+            Case 0
+                Text1.Text = "No changes were made."
+            Case Is >= 1
+                Text1.Text = "OK/Apply clicked."
+        End Select
+    End Sub
+    
+    Private Sub Command4_Click() Handles Command4.Click
+        Dim lRet As Long
+        lRet = ShowPropsheet(Me.hWnd, hMod, pdtWizard97)
+        Select Case lRet
+            Case -1
+                Text1.Text = "An error occured."
+            Case 0
+                Text1.Text = "No changes were made."
+            Case Is >= 1
+                Text1.Text = "OK/Apply clicked."
+        End Select
+    End Sub
+    
+    Private Sub Command5_Click() Handles Command5.Click
+        Dim lRet As Long
+        lRet = ShowPropsheet(Me.hWnd, hMod, pdtAeroWizard)
+        Select Case lRet
+            Case -1
+                Text1.Text = "An error occured."
+            Case 0
+                Text1.Text = "No changes were made."
+            Case Is >= 1
+                Text1.Text = "OK/Apply clicked."
+        End Select
+    End Sub
+    
+
+End Class

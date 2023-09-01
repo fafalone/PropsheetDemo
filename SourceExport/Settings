@@ -1,0 +1,76 @@
+{
+	"configuration.inherits": "Defaults",
+	"debugger.runtimeCommandLineArguments": "",
+	"project.appHelpFile": "",
+	"project.appTitle": "TBPropSheetDemo",
+	"project.autoPrettify": true,
+	"project.buildPath": "${SourcePath}\\Build_${Architecture}\\${ProjectName}.${FileExtension}",
+	"project.buildType": "Standard EXE",
+	"project.description": "twinBASIC Property Sheet Demo",
+	"project.exportPathIsV2": true,
+	"project.forceDpiAwarenessAtStartup": "SYSTEM_DPI_AWARE",
+	"project.id": "{9A0CED1A-8109-43D7-8196-59AC5FEAFD37}",
+	"project.licence": "MIT",
+	"project.name": "TBPropSheetDemo",
+	"project.optionExplicit": true,
+	"project.references": [
+		{
+			"id": "{F50B82D0-DCAB-43FE-9631-11959D4A4728}",
+			"isCompilerPackage": true,
+			"lcid": 0,
+			"licence": "MIT",
+			"name": "[COMPILER PACKAGE] WinNativeForms Package",
+			"path32": "",
+			"path64": "",
+			"publisher": "TWINBASIC-COMPILER",
+			"versionBuild": 0,
+			"versionMajor": 0,
+			"versionMinor": 0,
+			"versionRevision": 31
+		},
+		{
+			"id": "{00020430-0000-0000-C000-000000000046}",
+			"lcid": 0,
+			"name": "OLE Automation",
+			"path32": "\\\\?\\C:\\Windows\\SysWOW64\\stdole2.tlb",
+			"path64": "\\\\?\\C:\\Windows\\SysWOW64\\stdole2.tlb",
+			"versionMajor": 2,
+			"versionMinor": 0
+		},
+		{
+			"id": "{1FCDB98D-617D-4995-9736-2ED0E4746A10}",
+			"licence": "CC0 1.0 Universal",
+			"name": "[IMPORTED] twinBASIC Shell Library v5.2.212",
+			"path32": "/Packages/tbShellLib",
+			"path64": "/Packages/tbShellLib",
+			"publishedDate": "30-AUG-2023",
+			"publishedTime": "17:02:00",
+			"publisher": "fafalone",
+			"symbolId": "tbShellLib",
+			"versionBuild": "212",
+			"versionMajor": "5",
+			"versionMinor": "2",
+			"versionRevision": "0"
+		}
+	],
+	"project.settingsVersion": 1,
+	"project.startupObject": "frmMain",
+	"project.versionCompanyName": "JAJ Productions",
+	"project.versionFileDescription": "tB PropSheet Demo",
+	"project.versionLegalCopyright": "(c) 2023",
+	"project.versionMajor": 1,
+	"project.versionMinor": 3,
+	"project.versionProductName": "TBPropSheetDemo",
+	"project.versionRevision": 6,
+	"project.warnings": {
+		"errors": [
+			"TB0001",
+			"TB0002",
+			"TB0003",
+			"TB0016",
+			"TB0015"
+		],
+		"ignored": []
+	},
+	"runtime.useUnicodeStandardLibrary": true
+}
