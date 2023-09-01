@@ -1,6 +1,3 @@
-# PROJECT NOT YET UPLOADED
-Current project is an ugly proof of concept that does nothing more than show the prop sheet from the SDK example with no code to interact with it.
-
 # Propsheet Demo
 
 ## twinBASIC Property Sheet Demo
