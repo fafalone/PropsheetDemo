@@ -4,6 +4,7 @@
 
 ![image](https://github.com/fafalone/PropsheetDemo/assets/7834493/00ec5873-66ba-40d2-a620-cd013926a01f) ![image](https://github.com/fafalone/PropsheetDemo/assets/7834493/353db63d-6a07-47bc-8de1-64723f64fa1a)
 
+**Update (19 Dec 2023):** .twinproj has been updated to use a more recent version of WinDevLib (formerly tbShellLib) due to errors in the package tB did not raise at the time this project was released.
 
 **Requirements:** A recent version of [twinBASIC](https://github.com/twinbasic/twinbasic/releases) and tbShellLib v5.2.210 or higher for all the API definitions-- it's included in the .twinproj file here, but you'll need to add it in a new project. (You can also copy all the relevant defs). Windows XP or newer. 
 
