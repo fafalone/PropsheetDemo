@@ -27,7 +27,7 @@ Once you've imported the resource file, it's time to start coding! You might wan
 ### Setting up the code
 The first thing to do is add your control IDs. If you used Visual Studio, you can grab them from resouce.h, but from Resource Hacker you'll need to manually define constants for each one. The standard practice is to prefix them with IDC_ for controls, IDI_ for icons, and IDB_ for bitmaps. Next thing to do is set up the code to call the `PropertySheetW` function. You'll need a [`PROPSHEETHEADER`](https://learn.microsoft.com/en-us/windows/win32/controls/pss-propsheetheader) type and an array (if you have more than 1) of [`PROPSHEETPAGE`](https://learn.microsoft.com/en-us/windows/win32/controls/pss-propsheetpage) types. See the links for full documentation of all the possible options. Here's how it's done in the demo:
 
-```
+```vb6
         Dim tPSP(1) As PROPSHEETPAGEW
         Dim tPSH As PROPSHEETHEADERW
     
@@ -77,7 +77,7 @@ You'll definitely need the `pfnDlgProc` functions, but the other callbacks are o
 
 The dialog procs are very similar to subclassing WndProcs:
 
-```
+```vb6
     Private Function PageOneDlgProc(ByVal hDlg As LongPtr, ByVal uMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
         Select Case uMsg
             Case WM_INITDIALOG
@@ -87,7 +87,7 @@ The dialog procs are very similar to subclassing WndProcs:
 ```
 The `WM_INITDIALOG` message is the best place to set the initial states of all your controls. There's a number of dialog-specific functions for this, allowing you to do things by ID instead of hWnd, but for other things you can get the hWnd of a control with the `GetDlgItem` function. We store the handle to the dialog in a module-level variable for use in the Propsheet callback, because each page has it's own handle (remember, each page is a separate dialog resource), and the PropSheetCallback passes only the top level hwnd. Setting the initial controls states is fairly self explanatory; I'll point out one thing as noted above, changing the font on an individual control, in this case our page one welcome message:
 
-```
+```vb6
         Dim hFontHdr As LongPtr = CreateFontW(-20, 0, 0, 0, FW_BOLD, CFALSE, CTRUE, CFALSE, _
                                                 ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, _
                                                 CLEARTYPE_QUALITY, DEFAULT_PITCH Or FF_SWISS, _
@@ -101,7 +101,7 @@ The `WM_INITDIALOG` message is the best place to set the initial states of all y
 There are of course other ways to create a font, including from the StdFont object to match a Form's font, but that's a separate topic. If you right click the API names for `SendDlgItemMessageW` or `SetDlgItemTextW` and click Go to definition, it will take you to the Dialog section of tbShellLib, where you can see all of the available dialog-specific APIs.\
 After that, we monitor for changes the exact same we would for an API-created window or a subclassed window, primarily through `WM_COMMAND` and `WM_NOTIFY` messages, depending on the control. We get the current values, compare it to the values we loaded in the InitPageNValues functions if neccessary (i.e. if a click isn't dispositive of whether we want to consider it a change), and if different, we signal a change to the property sheet, which enables the 'Apply' button, for example:
 
-```
+```vb6
             Case WM_COMMAND
                 Dim nID As Long = GET_WM_COMMAND_ID(wParam, lParam)
                 Dim nCmd As Long = GET_WM_COMMAND_CMD(wParam, lParam)
@@ -123,7 +123,7 @@ All `PropSheet_` macros and the `GET_WM_COMMAND_` macros defined in Windows head
 
 Finally, for this project, we use the property sheet callback to monitor button presses so we know when to report the changed values:
 
-```
+```vb6
     Private Sub PropsheetCallback(ByVal hwndPropSheet As LongPtr, ByVal uMsg As Long, ByVal lParam As LongPtr)
         Select Case uMsg
 '...
