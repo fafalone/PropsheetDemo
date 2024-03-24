@@ -141,5 +141,8 @@ Finally, for this project, we use the property sheet callback to monitor button 
 
 That's pretty much all there is to it! Check out the demo for the full example code, and download the entire respository for the .res intermediate.
 
-Stay tuned for the next step, turning this into a control panel applet!
- 
+## What to do with Property Sheets?
+
+This whole project started off with the goal of making a control panel applet that runs from a standard DLL (.cpl file), using lightweight GUI resources without including the whole Forms engine, that were visually and functionally consistent with other Control Panel items. I'm pleased to announce that after a lengthy delay, the project taking us from here to that goal is now available:
+
+### [twinBASIC Control Panel Applet Demo](https://github.com/fafalone/TBControlPanel)
