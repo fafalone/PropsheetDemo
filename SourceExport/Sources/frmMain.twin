@@ -1,6 +1,6 @@
-[ Description ("") ]
-[ FormDesignerId ("149782F6-F753-417B-8377-CB56C3A3C794") ]
-[ PredeclaredId ]
+[ Description ("twinBASIC Property Sheet Demo") ]
+[FormDesignerId("149782F6-F753-417B-8377-CB56C3A3C794")]
+[PredeclaredId]
 Class frmMain
     
     Private hMod As LongPtr

@@ -3,10 +3,10 @@
    <assemblyIdentity
       type="win32"
       processorArchitecture="*"
-      name="TBPropSheetDemo"
+      name="My_twinBASIC_Application"
       version="1.0.0.0"
    />
-   <description>twinBASIC Property Sheet Demo</description>
+   <description>Application description here</description>
    <dependency>
       <dependentAssembly>
          <assemblyIdentity

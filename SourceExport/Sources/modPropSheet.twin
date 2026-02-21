@@ -555,7 +555,7 @@ Module modPropsheet
     Private Function Ipv4NetAtoS(ByVal NetAddrLong As Long) As String
         Dim pS As LongPtr
         Dim pEnd As LongPtr
-        Dim tAdr As in_addr
+        Dim tAdr As IN_ADDR
         Dim haddr As Long
         haddr = ntohl(NetAddrLong)
         tAdr.s_addr = haddr
@@ -565,7 +565,7 @@ Module modPropsheet
         #If Win64 Then
             Ipv4NetAtoS = Left$(Ipv4NetAtoS, CLng(((pEnd Xor &H8000000000000000) - (pS Xor &H8000000000000000)) \ 2))
         # Else
-             Ipv4NetAtoS = Left$(Ipv4NetAtoS, ((pEnd Xor &H80000000) - (pS Xor &H80000000)) \ 2)
+             Ipv4NetAtoS = Left$(Ipv4NetAtoS, ((pEnd Xo &H80000000) - (pS Xor &H80000000)) \ 2)
         #End If
         
     End Function
